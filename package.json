@@ -1,11 +1,13 @@
 {
-  "name": "dynamo-helper",
+  "name": "std-dynamo-query-builder",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
   "scripts": {
-    "test": "jest --config jestconfig.json",
-    "build": "tsc",
+    "build": "tsc -p .",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "tslint -p tsconfig.json",
     "prepare": "npm run build",
@@ -26,9 +28,12 @@
   },
   "homepage": "https://github.com/abedbilani/dynamo-helper#readme",
   "devDependencies": {
+    "@types/node": "^16.10.3",
     "prettier": "^2.4.1",
     "tslint": "^6.1.3",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^4.4.3"
+  },
+  "dependencies": {
   }
 }
