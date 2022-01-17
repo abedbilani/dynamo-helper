@@ -18,47 +18,68 @@ class QueryHelper {
     const ExpressionAttributeValues = {
       ':updatedAt': Utils.getTimeStamp(),
     };
-    if (attributes) {
+    if (attributes && Object.keys(attributes).length !== 0) {
       Object.entries(attributes).map(([attribute, value]) => {
         if (attribute !== 'pk' && attribute !== 'sk' && value !== undefined) {
           const nestedAttributes = attribute.split('.');
-          if (nestedAttributes.length > 1) {
-            Object.entries(nestedAttributes).map(([nestedAttribute, i]) => {
-              // @ts-ignore
-              if (i === 0) {
-                const attributeName = nestedAttribute.charAt(0)
-                  .toUpperCase() + nestedAttribute.slice(1);
-                UpdateExpression += `, #${attributeName}.`;
+          if (typeof value !== 'object' && Object.keys(value).length !== 0) {
+            if (nestedAttributes.length > 1) {
+              Object.entries(nestedAttributes).map(([nestedAttribute, i]) => {
                 // @ts-ignore
+                if (i === 0) {
+                  const attributeName = nestedAttribute.charAt(0)
+                    .toUpperCase() + nestedAttribute.slice(1);
+                  UpdateExpression += `, #${attributeName}.`;
+                  ExpressionAttributeNames[`#${attributeName}`] = attributeName;
+                } else {
+                  UpdateExpression += `#${nestedAttribute}.`;
+                  ExpressionAttributeNames[`#${nestedAttribute}`] = nestedAttribute;
+                }
+                // @ts-ignore
+                if ((nestedAttributes.length - 1) === i) {
+                  UpdateExpression = UpdateExpression.slice(0, -1);
+                  console.log(nestedAttribute);
+                  UpdateExpression += ` = :${nestedAttribute} `;
+                  ExpressionAttributeValues[`:${nestedAttribute}`] = value;
+                }
+              });
+            } else {
+              const attributeName = attribute.charAt(0)
+                .toUpperCase() + attribute.slice(1);
+              UpdateExpression += `, #${attributeName} = :${attribute} `;
+              ExpressionAttributeNames[`#${attributeName}`] = attributeName;
+              ExpressionAttributeValues[`:${attribute}`] = value;
+            }
+          }
+          if (typeof value === 'object' && Object.keys(value).length !== 0) {
+            if (!Array.isArray(value)){
+              Object.entries(value).map(([subAttribute, subValue]) => {
+                const attributeName = attribute.charAt(0)
+                  .toUpperCase() + attribute.slice(1);
+                console.log({ attribute, subAttribute, subValue })
+
+                UpdateExpression += `, #${attributeName}.${subAttribute}  = :${subAttribute}`;
                 ExpressionAttributeNames[`#${attributeName}`] = attributeName;
-              } else {
-                UpdateExpression += `#${nestedAttribute}.`;
-                // @ts-ignore
-                ExpressionAttributeNames[`#${nestedAttribute}`] = nestedAttribute;
-              }
+                ExpressionAttributeValues[`:${subAttribute}`] = subValue;
+
+              })
+            }
+            else {
+              const attributeName = attribute.charAt(0)
+                .toUpperCase() + attribute.slice(1);
+              UpdateExpression += `, #${attributeName} = :${attribute} `;
               // @ts-ignore
-              if ((nestedAttributes.length - 1) === i) {
-                UpdateExpression = UpdateExpression.slice(0, -1);
-                UpdateExpression += ` = :${nestedAttribute} `;
-                // @ts-ignore
-                ExpressionAttributeValues[`:${nestedAttribute}`] = value;
-              }
-            });
-          } else {
-            const attributeName = attribute.charAt(0)
-              .toUpperCase() + attribute.slice(1);
-            UpdateExpression += `, #${attributeName} = :${attribute} `;
-            // @ts-ignore
-            ExpressionAttributeNames[`#${attributeName}`] = attributeName;
-            // @ts-ignore
-            ExpressionAttributeValues[`:${attribute}`] = value;
+              ExpressionAttributeNames[`#${attributeName}`] = attributeName;
+              // @ts-ignore
+              ExpressionAttributeValues[`:${attribute}`] = value;
+            }
           }
         }
       });
       UpdateExpression = UpdateExpression.slice(0, -1);
     }
 
-    if (addAttributes) {
+    if (addAttributes && Object.keys(addAttributes).length !== 0) {
       UpdateExpression += ' add ';
       Object.entries(attributes).map(([attribute, value]) => {
         const attributeName = attribute.charAt(0)
@@ -72,7 +93,7 @@ class QueryHelper {
       UpdateExpression = UpdateExpression.slice(0, -1);
     }
 
-    if (appendAttributes) {
+    if (appendAttributes && Object.keys(appendAttributes).length !== 0) {
       Object.entries(attributes).map(([attribute, value]) => {
         const attributeName = attribute.charAt(0)
           .toUpperCase() + attribute.slice(1);
@@ -85,7 +106,7 @@ class QueryHelper {
       UpdateExpression = UpdateExpression.slice(0, -1);
     }
 
-    if (removeAttributes) {
+    if (removeAttributes && Object.keys(removeAttributes).length !== 0) {
       UpdateExpression += ' remove ';
       Object.entries(removeAttributes).map(([attribute, value]) => {
         UpdateExpression += ` #${value} ,`;
